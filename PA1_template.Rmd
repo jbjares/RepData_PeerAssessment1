@@ -24,6 +24,9 @@ totalStepsPerDay <- aggregate(steps ~ date, data = fullData, sum, na.rm = TRUE)
   if(!("ggplot2" %in% rownames(installed.packages()))){
     install.packages("ggplot2")  
   }
+  if(!("lubridate" %in% rownames(installed.packages()))){
+    install.packages("lubridate")  
+  }
 ```
 
 
@@ -92,28 +95,48 @@ fullDataWitoutNAs[is.na(fullData)] = as.integer(runif(1, 5, 7))
 
 ### Create a new dataset that is equal to the original dataset but with the missing data filled in
 ```{r echo=TRUE, cache=TRUE}
-avgActivityDaily <- aggregate(interval ~ date + steps, data = fullDataWitoutNAs, median)
-hist(avgActivityDaily$steps)
+avgActivityDailyMedian <- aggregate(interval ~ date + steps, data = fullData, median)
+
 ```
+
+
+### Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. 
 
 ```{r echo=TRUE, cache=TRUE}
-avgActivityDaily <- aggregate(interval ~ date + steps, data = fullDataWitoutNAs, mean)
-hist(avgActivityDaily$steps)
+avgActivityDailyMean <- aggregate(interval ~ date + steps, data = fullDataWitoutNAs, mean)
+hist(avgActivityDailyMedian$steps)
+hist(avgActivityDailyMean$steps)
 ```
 
-## Are there differences in activity patterns between weekdays and weekends?
+
+### Do these values differ from the estimates from the first part of the assignment? 
+Reply: It seems not make much difference.
+
+
+### What is the impact of imputing missing data on the estimates of the total daily number of steps?
+Reply: I didn't figure out.
+
 
 ### Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 ```{r echo=TRUE, cache=TRUE}
-weekDays <- factor("weekday","weekend")
+weekDaysFactor <- factor("weekday","weekend")
 ```
 
 ### Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). The plot should look something like the following, which was created using simulated data:
 
-```{r echo=TRUE, cache=TRUE}
-
+```{r echo=TRUE}
+library(lubridate)
+subdata <- subset(fullData)
+subdata$date <- as.Date(subdata$date)
+subdata$V4<- weekdays(subdata$date)
+colnames(subdata)[4] <- "week"
+subdata[5]<- ifelse(subdata$week=="Sunday" | subdata$week=="Saturday","Weekend","Weekday")
+colnames(subdata)[5] <- "wday"
 
 library(lattice)
-#xyplot(steps ~ interval | factor(day), data = , aspect = 1/2,  type = "l")
+xyplot(steps~interval|subdata$wday, data = subdata, type = "l", layout = c(1, 2), ylab = "Average Number of Steps")
+
 ```
 
+## Are there differences in activity patterns between weekdays and weekends?
+Reply: Yes. Seems that during the weekdays the activities starts more intensity, as well as, during the weekend we can see less intensity during all graphic.
